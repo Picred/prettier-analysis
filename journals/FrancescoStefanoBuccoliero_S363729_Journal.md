@@ -7,3 +7,4 @@
 |**Code Analysis**: Investigation of explicit relationships via import statements. Identified modules with most and least dependencies|`madge`, `git`, `VSCode`|19/04/2026|1.5|
 |**Knowledge Analysis**: Investigation of implicit relationships via historical commit patterns| `git`|20/04/2026|1.5|
 |**Reporting**: Documentation synthesis and collaborative integration into the team's codebase.|`VSCode`, `git`|21/04/2026|1|
+|**Pattern Analysis**: Identified and analyzed main design patterns in Prettier and their roles in the architecture.|`VSCode`, `grep`, `ls`|28/04/2026|3|
