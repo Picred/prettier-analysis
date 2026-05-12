@@ -3,14 +3,24 @@
 ## 1. Dependencies
 
 ### Method and Tools Used
+
+*TO DO: valuta se sintetizzare*
+
 The dependency analysis was performed to evaluate the code and knowledge dependencies among the software modules within the Prettier project, specifically focusing on the `src/` directory to isolate the core business logic.
 To extract code dependencies based on explicit `import` statements, tools such as `madge`, `dependency-cruiser`, and custom PowerShell scripts combined with standard Unix text processing utilities (`grep`, `awk`) were utilized. Furthermore, `dependency-cruiser` output metrics were analyzed to calculate Afferent Coupling (Fan-in), Efferent Coupling (Fan-out), Instability, and detecting circular dependencies.
 For knowledge dependencies (logical coupling), `git log` was employed to analyze the recent commit history (e.g., the last 1000 commits from tags like `3.8.2`) to identify files that are frequently modified together in the same commits.
+
+*TO DO: valutare di inserire per ciascuna fase i comandi che consentono di ottenere queste informazioni*
+
+*table generation: npx dependency-cruiser src --no-config --output-type metrics > dependency_metrics.txt*
 
 ### Code Dependencies
 Based on the explicit imports in the source code, we investigated which files act as central hubs (high efferent coupling), which serve as core foundational blocks (high afferent coupling), and which act as independent atomic utilities (low efferent coupling).
 
 **High Efferent Coupling (Fan-out) - Files with the most dependencies:**
+
+*command: grep "src/.*\.js" dependency_metrics.txt | sort -k5 -nr | head -n 3*
+
 1. `src/language-js/print/flow.js` (35 imports)
 2. `src/language-js/print/typescript.js` (33 imports)
 3. `src/language-js/print/estree.js` (29 imports)
@@ -18,21 +28,33 @@ Based on the explicit imports in the source code, we investigated which files ac
 5. `src/language-markdown/printer-markdown.js` (21 imports)
 6. `src/index.js` (18 imports)
 
-*Why?* These files function as architectural "Hubs" or "Orchestrators" and show a very high Instability index (close to 97%). Prettier operates by parsing source code into an Abstract Syntax Tree (AST) and then transforming it into a formatted document. The language-specific printers (`flow.js`, `typescript.js`, `estree.js`) are "builders" that need to handle every single type of language construct (arrays, classes, functions, loops). Consequently, they aggregate numerous specialized micro-modules for each construct, explaining their immense fan-out. Files like `index.js` and `production-plugins.js` serve as system entry points, aggregating all supported plugins and languages to expose a unified API to the user.
+*TO DO: valutare se aggiungere info significative dei file utilizzati (es. anche grafici esplicativi). POSSIBILE: valutare di aggiungere codice Plant UML direttamente nel report.*
+
+These files function as architectural "Hubs" or "Orchestrators" and show a very high Instability index (close to 97%). Prettier operates by parsing source code into an Abstract Syntax Tree (AST) and then transforming it into a formatted document. The language-specific printers (`flow.js`, `typescript.js`, `estree.js`) are "builders" that need to handle every single type of language construct (arrays, classes, functions, loops). Consequently, they aggregate numerous specialized micro-modules for each construct, explaining their immense fan-out. Files like `index.js` and `production-plugins.js` serve as system entry points, aggregating all supported plugins and languages to expose a unified API to the user.
 
 **High Afferent Coupling (Fan-in) - The most "popular" files:**
-Certain files are heavily depended upon; if they break, the system collapses.
+Certain files are heavily depended upon; if they break, the system collapses. 
+
+*TO DO: valutare di aggiungere una descrizione più dettagliata*
+
+*TO DO: valutare se tenere o eliminare in base alla qt. di caratteri ottenuti*
+
 1. `src/document/index.js` (Over 70 incoming dependencies): Prettier relies on an intermediate formatting representation called "Doc". This file exports the primitives required to build this format. Every supported language printer must import it.
 2. `src/language-js/utilities/node-types.js` (Over 35 incoming dependencies): Acts as a dictionary for the AST node types, constantly queried by the JavaScript printing modules.
 3. Cross-cutting utilities (e.g., `utilities/is-non-empty-array.js` or `main/comments/print.js`): Universal operations centralized to prevent code duplication, imported across parsers and printers of all languages.
 
 **Low Efferent Coupling - Files with the least dependencies:**
+
+*command: grep "src/.*\.js" dependency_metrics.txt | sort -k5 -n | head -n 3*
+
 1. `src/cli/options/create-minimist-options.js`
 2. `src/common/ast-path.js`
 3. `src/common/errors.js`
 4. `src/document/printer/indent.js`
 
-*Why?* These files are atomic utilities or "Leaves" located at the base of the dependency pyramid, boasting an Efferent Coupling (Ce) of 0. They contain pure logic, constant definitions, or simple helper algorithms. By strictly following the Single Responsibility Principle and avoiding core imports, they provide extreme stability. If the system undergoes massive refactoring, these leaf nodes will likely remain unchanged.
+These files are atomic utilities or "Leaves" located at the base of the dependency pyramid, boasting an Efferent Coupling (Ce) of 0. They contain pure logic, constant definitions, or simple helper algorithms. By strictly following the Single Responsibility Principle and avoiding core imports, they provide extreme stability. If the system undergoes massive refactoring, these leaf nodes will likely remain unchanged.
+
+*TO DO: valutare se tenere o eliminare in base alla qt. di caratteri ottenuti. MOMENTANEAMENTE DA TOGLIERE*
 
 **Structural Integrity and Circular Dependencies:**
 A circular dependency check using `madge --circular` identified two cycles located within the core formatting engine:
@@ -42,9 +64,16 @@ A circular dependency check using `madge --circular` identified two cycles locat
 While circular dependencies are usually an "architectural smell" violating the Acyclic Dependencies Principle (ADP), their presence here is driven by the highly recursive nature of the "Doc" data structure. Builders and utilities operate symbiotically on the same recursive definitions.
 
 ### Knowledge Dependencies
-Knowledge dependencies were identified by evaluating logical coupling through co-change analysis in the Git history. 
+Knowledge dependencies were identified by evaluating logical coupling through co-change analysis in the Git history.
+
+*command: git --no-pager log -n 100 --name-only --pretty=format:"--- COMMIT ---"*
+
+**Consistent with Code Dependencies:**
+
+*TO DO: aggiungi quelle consistenti che qui mancano. dependency_analysis_Letizia_Pontarolo.md --> valuta file in language md*
 
 **Inconsistencies with Code Dependencies:**
+
 While many co-changes correctly mirrored code dependencies (e.g., core pipeline components changing together), several glaring inconsistencies were uncovered where files share zero static code links yet possess strong logical dependencies:
 
 - **The JavaScript Parser Family:** Commits frequently modify `acorn.js`, `babel.js`, `espree.js`, `meriyah.js`, `oxc.js`, and `typescript.js` simultaneously. At a static level, these parsers are completely isolated alternative implementations for parsing JavaScript. They do not import one another. However, when Prettier adds support for a new JavaScript syntax or fixes a general parsing bug, every single supported parser must be updated to maintain system consistency.
@@ -55,6 +84,8 @@ While many co-changes correctly mirrored code dependencies (e.g., core pipeline 
 ---
 
 ## 2. Patterns
+
+*TO DO: valuta di rendere in forma maggiormente discorsivo la parte iniziale. mantieni invariate le alternative *
 
 An extensive analysis of the source code revealed a sophisticated usage of architectural design patterns, necessary to manage the extreme complexity of a multi-language AST-based formatter. Below are 6 key patterns identified in the codebase.
 
@@ -98,20 +129,7 @@ Because Prettier uses functional paradigms, formal classes are absent, but the r
 - *Pros:* Marginally faster execution and lower memory overhead since no intermediate tree is allocated.
 - *Cons:* Advanced formatting becomes a maintenance nightmare. Code would be flooded with endless lookahead logic and conditional checks for line lengths, completely entangling formatting intent with spatial calculation.
 
-### 2.4 Command Pattern (Behavioral)
-**Classes/Role:** 
-- **Command:** The `Doc` objects containing layout instructions (`indent`, `group`, `break`).
-- **Invoker/Interpreter:** The `printDocToString(doc, options)` function in `src/document/printer/printer.js`.
-- **Client:** The language-specific printers queueing these operational instructions.
-
-**Why is it used? (Problem Solved):** The pattern separates the "intent" to format from the actual physical string rendering. The engine accumulates commands and evaluates them in a controlled environment. Crucially, this allows for "backtracking": the engine can simulate the execution of a `Doc` command queue, verify if the resulting text fits the line width, and discard or alter the layout strategy if it fails, which is the cornerstone of Prettier's intelligent formatting.
-
-**Alternatives (Pros & Cons):** 
-- *Alternative:* Immediate recursive string concatenation.
-- *Pros:* Faster raw execution.
-- *Cons:* Once a string is concatenated and printed, it cannot be "undone". Intelligent context-aware line-wrapping is impossible to achieve reliably.
-
-### 2.5 Facade Pattern (Structural)
+### 2.4 Facade Pattern (Structural)
 **Classes/Role:** 
 - **Facade:** `src/index.js`
 - **Subsystems behind the facade:** `src/main/core.js`, plugin loaders (`src/main/plugins/index.js`), configuration resolvers (`src/config/resolve-config.js`), etc.
@@ -123,7 +141,7 @@ Because Prettier uses functional paradigms, formal classes are absent, but the r
 - *Pros:* Maximum granular control for power users.
 - *Cons:* A highly unstable public API where internal refactoring immediately breaks third-party implementations and a steep learning curve for integration.
 
-### 2.6 Builder Pattern (Creational)
+### 2.5 Builder Pattern (Creational)
 **Classes/Role:** 
 - **Builder:** The utility functions in `src/document/builders/` (e.g., `group()`, `indent()`, `ifBreak()`).
 - **Product:** The final `Doc` intermediate representation structure.
@@ -139,9 +157,11 @@ Because Prettier uses functional paradigms, formal classes are absent, but the r
 
 ## 3. Summary
 
+*TO DO: valutare se aggiungere dei grafici specifici pattern Prettier*
+
 **Summary of the findings of the two design aspects:**
 The architectural design of Prettier demonstrates an exceptional degree of modularity, deliberately engineered to tackle the immense complexity of supporting dozens of different programming languages with perfectly consistent formatting rules. 
 
 From the **Dependency Analysis**, the repository exhibits a healthy, pyramid-like structure. Complex orchestrators ("Hubs") manage the macroscopic execution flow by aggregating numerous dependencies, while at the bottom, "Leaf" utilities provide zero-dependency, hyper-stable support functions. The discovery of specific circular dependencies in the core highlights the recursive nature of formatting algorithms rather than poor design. The **Knowledge Dependencies** via co-change analysis provided vital insight: physical code coupling is only half the story. The plugin-based architecture forces developers to synchronize updates across statically independent files (such as multiple parallel parsers or cross-language plugin APIs), proving that architectural interfaces often dictate development workflows stronger than explicit imports.
 
-From the **Pattern Analysis**, Prettier's structural and behavioral decisions perfectly align with its core mission. By utilizing the **Facade** pattern, it hides a massive ecosystem behind a trivial API. The **Strategy** pattern guarantees absolute extensibility, allowing community plugins to seamlessly integrate. The **Visitor** pattern ensures that the system's formatting logic remains untethered from external, third-party data structures (ASTs). Finally, the combination of **Composite**, **Command**, and **Builder** patterns orchestrates Prettier's true innovation: an Intermediate Representation (Doc) that mathematically guarantees optimal line wrapping and grouping by calculating spatial constraints before any text is actually rendered. Together, these design aspects ensure Prettier remains robust, testable, and infinitely scalable.
+From the **Pattern Analysis**, Prettier's structural and behavioral decisions perfectly align with its core mission. By utilizing the **Facade** pattern, it hides a massive ecosystem behind a trivial API. The **Strategy** pattern guarantees absolute extensibility, allowing community plugins to seamlessly integrate. The **Visitor** pattern ensures that the system's formatting logic remains untethered from external, third-party data structures (ASTs). Finally, the combination of **Composite** and **Builder** patterns orchestrates Prettier's true innovation: an Intermediate Representation (Doc) that mathematically guarantees optimal line wrapping and grouping by calculating spatial constraints before any text is actually rendered. Together, these design aspects ensure Prettier remains robust, testable, and infinitely scalable.
