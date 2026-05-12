@@ -1,0 +1,19 @@
+@startuml "Prettier_Container"
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+title Container Diagram for Prettier
+
+Person(developer, "Software Developer", "Uses Prettier via terminal or editor.")
+
+System_Boundary(prettier, "Prettier System") {
+    Container(cli, "CLI (Command Line Interface)", "Node.js", "Handles file reading, writing, and user arguments/configurations.")
+    Container(core, "Core API", "JavaScript", "The main formatting engine. Pure logic, no knowledge of the file system.")
+    Container(plugins, "Plugins System", "JavaScript", "Language-specific parsers and rules (JS, HTML, CSS, Markdown).")
+}
+
+Rel(developer, cli, "Executes formatting commands", "Terminal")
+Rel(cli, core, "Passes raw text and options to", "Function Call")
+Rel(core, plugins, "Injects and executes", "Dependency Injection / Strategy")
+
+@enduml

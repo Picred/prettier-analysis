@@ -1,0 +1,27 @@
+@startuml "Prettier_Context"
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+' Layout configuration
+LAYOUT_WITH_LEGEND()
+title System Context Diagram for Prettier
+
+' Actors
+Person(developer, "Software Developer", "Writes and maintains source code in various programming languages.")
+
+' Systems
+System(prettier, "Prettier", "Opinionated Code Formatter. Parses code and re-prints it with its own rules, enforcing a consistent style.")
+
+' External Systems
+System_Ext(ide, "IDE / Code Editor", "VS Code, WebStorm, Vim, etc. Provides the interface for the developer.")
+System_Ext(ci_cd, "CI/CD & Git Hooks", "Automated pipelines or pre-commit hooks (e.g., Husky, GitHub Actions).")
+
+' Relationships
+Rel(developer, ide, "Writes unformatted code in")
+Rel(developer, ci_cd, "Commits code to")
+
+Rel(ide, prettier, "Sends raw code & config to", "API/CLI")
+Rel(prettier, ide, "Returns formatted code to", "API/CLI")
+
+Rel(ci_cd, prettier, "Triggers formatting checks", "CLI")
+Rel(prettier, ci_cd, "Returns success/fail status", "Exit Codes")
+@enduml
