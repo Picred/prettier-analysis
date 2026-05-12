@@ -24,3 +24,11 @@
 | :--------------------------------------------------------- | :---------- |
 | Analyze `src` directory to evaluate Design Patterns        |      -      |
 | Generate graph for found design patterns                   |  `mermaid`  |
+
+
+## [10/05/2026] - [Software Design Draft] - 2 hours
+
+| Activity                                                   | Tools Used          |
+| :--------------------------------------------------------- | :------------------ |
+| Analyze drafts of all members                              |      -              |
+| Start writing the Software Design report draft             |      -              |
