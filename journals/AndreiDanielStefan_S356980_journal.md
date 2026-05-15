@@ -32,3 +32,11 @@
 | :--------------------------------------------------------- | :------------------ |
 | Analyze drafts of all members                              |      -              |
 | Start writing the Software Design report draft             |      -              |
+
+
+## [14-15/05/2026] - [Software Architecture] - 4 hours
+
+| Activity                                                   |                     Tools Used                    |
+| :--------------------------------------------------------- | :------------------------------------------------ |
+| Analyze main architecture parts                            |                          -                        |
+| Draw a first version of the C4 model                       | Structurizr playground / C4 DSL Extension (VSCode)|
