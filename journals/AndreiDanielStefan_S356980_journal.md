@@ -36,7 +36,15 @@
 
 ## [14-15/05/2026] - [Software Architecture] - 4 hours
 
-| Activity                                                   |                     Tools Used                    |
-| :--------------------------------------------------------- | :------------------------------------------------ |
-| Analyze main architecture parts                            |                          -                        |
-| Draw a first version of the C4 model                       | Structurizr playground / C4 DSL Extension (VSCode)|
+| Activity                                                   |                                Tools Used                                    |
+| :--------------------------------------------------------- | :--------------------------------------------------------------------------- |
+| Analyze main architectural components                      |                                     -                                        |
+| Draw a first version of the C4 model                       | Structurizr playground / C4 DSL Extension (VSCode) `default-jre`, `graphviz`.|
+
+
+## [16/05/2026] - [Software Architecture] - 2 hours
+
+| Activity                                                                           |                                Tools Used                                   |
+| :----------------------------------------------------------------------------------| :---------------------------------------------------------------------------|
+| Read official documentation of Prettier to achieve consistency                     |                                     -                                       |
+| Expand the draft of C4 model expliciting technologies and communication protocols  |       C4 DSL Extension (VSCode) with `default-jre`, `graphviz`              |
