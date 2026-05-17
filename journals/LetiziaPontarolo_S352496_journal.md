@@ -9,3 +9,5 @@
 | 19/04/2026 | **Code Dependency Analysis**: Identified modules with most and least dependencies by analyzing import statements. | `PowerShell`, `VSCode` | 1.5 |
 | 20/04/2026 | **Knowledge Dependency Analysis**: Analyzed co-change relationships using Git history to identify knowledge dependencies. | `git` | 1.5 |
 | 27/04/2026 | **Pattern Analysis**: Identified and analyzed main design patterns in Prettier and their roles in the architecture. | `VSCode` | 2.5 |
+| 15/05/2026 | **C4 Diagram Design**: Created Context, Container, and Component diagrams | `PlantUML` | 2.5 |
+| 16/05/2026 | **Software Architecture Report Drafting**: Wrote a first version of the Software Architecture report | | 3 |
