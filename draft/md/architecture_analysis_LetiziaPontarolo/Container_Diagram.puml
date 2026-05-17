@@ -1,0 +1,40 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+LAYOUT_WITH_LEGEND()
+
+title Prettier - Container Diagram
+
+Person(developer, "Software Developer", "Writes and maintains source code.")
+
+System_Ext(editor, "Code Editor / IDE", "External editor or IDE that integrates Prettier.")
+System_Ext(ci, "CI/CD Pipeline", "Automation environment that runs checks or formatting tasks.")
+
+System_Boundary(prettier, "Prettier") {
+
+    Container(cli, "CLI", "Node.js command-line application", "Allows users and automation tools to run Prettier from the terminal.")
+
+    Container(api, "Public API", "JavaScript API", "Allows editors, IDE extensions and other tools to use Prettier programmatically.")
+
+    Container(config, "Configuration Resolver", "JavaScript module", "Loads and resolves Prettier configuration options.")
+
+    Container(engine, "Formatting Engine", "JavaScript modules", "Parses source code and prints it in a consistent style.")
+
+    Container(languageSupport, "Plugin / Language Support", "Built-in and external plugins", "Provides parsers and printers for supported languages.")
+}
+
+Rel(developer, cli, "Uses", "Runs Prettier commands")
+Rel(developer, editor, "Writes code using")
+
+Rel(editor, api, "Invokes", "Format on save or on demand")
+Rel(ci, cli, "Runs", "Formatting check or automatic formatting")
+
+Rel(cli, config, "Reads", "Formatting options")
+Rel(api, config, "Reads", "Formatting options")
+
+Rel(cli, engine, "Invokes", "Format or check files")
+Rel(api, engine, "Invokes", "Format source code")
+
+Rel(engine, languageSupport, "Uses", "Parsers and printers")
+
+@enduml
