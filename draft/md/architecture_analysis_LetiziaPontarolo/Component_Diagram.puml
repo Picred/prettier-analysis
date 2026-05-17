@@ -1,0 +1,69 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Prettier - Component Diagram: Formatting Engine
+
+Person(developer, "Software Developer", "Writes and maintains source code.")
+
+System_Ext(editor, "Code Editor / IDE", "External editor or IDE that integrates Prettier.")
+System_Ext(ci, "CI/CD Pipeline", "Automation environment that runs checks or formatting tasks.")
+
+System_Boundary(prettier, "Prettier") {
+
+    Container(cli, "CLI", "Node.js command-line application", "Allows users and automation tools to run Prettier from the terminal.")
+
+    Container(api, "Public API", "JavaScript API", "Allows editors, IDE extensions and other tools to use Prettier programmatically.")
+
+    Container(config, "Configuration Resolver", "JavaScript module", "Loads and resolves Prettier configuration options.")
+
+    Container(languageSupport, "Plugin / Language Support", "Built-in and external plugins", "Provides parsers and printers for supported languages.")
+
+    Container_Boundary(engine, "Formatting Engine") {
+
+        Component(parserSelector, "Parser Selector", "JavaScript module", "Selects the appropriate parser based on language, file path or options.")
+
+        Component(parser, "Parser", "Language-specific parser", "Converts source code into an Abstract Syntax Tree.")
+
+        Component(commentAttacher, "Comment Attacher", "JavaScript module", "Preserves and attaches comments to the correct AST nodes.")
+
+        Component(astPreprocessor, "AST Preprocessor", "JavaScript module", "Prepares or normalizes the AST before printing.")
+
+        Component(printer, "Printer", "Language-specific printer", "Converts the AST into Prettier's intermediate Doc representation.")
+
+        Component(docBuilders, "Doc Builders", "Intermediate representation utilities", "Build abstract formatting commands such as group, line and indent.")
+
+        Component(docPrinter, "Doc Printer", "JavaScript module", "Converts the Doc representation into the final formatted source code.")
+    }
+}
+
+Rel(developer, cli, "Uses", "Runs Prettier commands")
+Rel(developer, editor, "Writes code using")
+
+Rel(editor, api, "Invokes", "Format on save or on demand")
+Rel(ci, cli, "Runs", "Formatting check or automatic formatting")
+
+Rel(cli, config, "Reads", "Formatting options")
+Rel(api, config, "Reads", "Formatting options")
+
+Rel(cli, parserSelector, "Invokes", "Format or check files")
+Rel(api, parserSelector, "Invokes", "Format source code")
+
+Rel(config, parserSelector, "Provides", "Resolved options")
+
+Rel(parserSelector, parser, "Selects")
+Rel(parser, commentAttacher, "Produces AST for")
+Rel(commentAttacher, astPreprocessor, "Passes annotated AST to")
+Rel(astPreprocessor, printer, "Passes prepared AST to")
+Rel(printer, docBuilders, "Uses", "Builds Doc representation")
+Rel(docBuilders, docPrinter, "Passes Doc to")
+
+Rel(docPrinter, cli, "Returns", "Formatted code or check result")
+Rel(docPrinter, api, "Returns", "Formatted code")
+
+Rel(languageSupport, parser, "Provides", "Parsers")
+Rel(languageSupport, printer, "Provides", "Printers")
+
+@enduml
