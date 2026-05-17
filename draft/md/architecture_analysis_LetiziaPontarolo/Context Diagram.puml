@@ -1,0 +1,21 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Prettier - System Context Diagram
+
+Person(developer, "Software Developer", "Writes and maintains source code.")
+
+System(prettier, "Prettier", "Opinionated code formatter that parses source code and prints it in a consistent style.")
+
+System_Ext(editor, "Code Editor / IDE", "External editor or IDE that integrates Prettier.")
+System_Ext(ci, "CI/CD Pipeline", "Automation environment that runs checks or formatting tasks.")
+
+Rel(developer, prettier, "Uses", "CLI or API")
+Rel(developer, editor, "Writes code using")
+Rel(editor, prettier, "Invokes", "Format on save or on demand")
+Rel(ci, prettier, "Runs", "Formatting check or automatic formatting")
+
+@enduml
