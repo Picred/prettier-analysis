@@ -1,0 +1,25 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Prettier Context Diagram
+
+Person(developer, "Developer", "Person that interacts with the code")
+
+System(prettier, "Prettier", "Code formatting program")
+
+System_Ext(code_editor, "IDE", "Editor that contains user's code and calls Prettier to format it")
+
+
+
+System_Ext(file_syst, "File system", "Modules that manage the static configuration files in the project")
+
+Rel(developer, prettier, "Uses")
+Rel(developer, code_editor, "Writes code in")
+Rel(code_editor, prettier, "Passes the file that has to be formatted via API")
+Rel(developer, prettier, "Runs commands directly in the terminal command")
+Rel(prettier,file_syst,  "Reads configuration files and raw source code")
+
+@enduml

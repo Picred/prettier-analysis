@@ -3,11 +3,7 @@ High level view. It shows the relationship between prettier and the external wor
 Actors:
 - IDE (contains the user's code and calls prettier to format the code);
 
-- Developer (interact with the code);
-
-- CLI config file (info passed through terminal):
-    - `src/cli/options.js`   
-    - `src/cli/context.js`
+- Developer (interacts with the code);
 
 - File System configuration resolution (manage the static configuration files saved in the project):
     - `src/config/config-searcher.js`                
@@ -35,6 +31,8 @@ After the files and flags are analyzed by the *CLI container*, the raw text is p
 Files: `src/main/core.js`, `src/index.js`
 
 Receives a string and coordinates the formatting process and returns the formatted string. It also manages the patterns seen previously (Visitor, Builder).
+
+(Prettier APIs = Core Engine interface, they are not a container because they are not an autonomous and executable unit, because they do not run in a separated process)
 
 ### Language Plugin Container
 Files: `src/language-*/`

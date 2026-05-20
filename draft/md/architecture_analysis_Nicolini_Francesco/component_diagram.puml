@@ -1,0 +1,60 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Prettier Component Diagram
+
+Person(developer, "Developer", "Person that interacts with the code")
+
+
+System_Ext(code_editor, "IDE", "Editor that contains user's code and calls Prettier to format it")
+System_Ext(file_syst, "File system", "Modules that manage the static configuration files in the project")
+
+System_Boundary(prettier, "Prettier"){
+
+    Container(cli, "CLI", "Command line translator and application", "Manages the terminal commands written by the user")
+    
+    Container_Boundary(core_engine, "Core engine"){
+
+        Component(conf_res,"Configuration Resolver", "Core's starting point","it communicates with the external File System to gather and unify style rules")
+        Component(parser, "AST parser and traverser", "Creates and analyzes the AST", "Takes the raw code and calls the parser to transform it in an AST. Afterwards it analyzes its structure.")
+        Component(instr_builder,"Layout instruction builder", "IR builder", "While the AST is being analyzed, this component builds the intermediate representation")
+        Component(printer, "Line-Wrapping Printer", "Formatted string printer", "It receives the intermediate representation and simulates the command execution, calculates the maximum row length and then returns the formatted line.")
+
+
+    }
+    
+    Container(language_plugin, "Language plugin", "Programming language translator", "Contains different ways of translating different programming languages")
+}
+
+'Developer 
+Rel(developer, cli, "Runs terminal commands")
+Rel(developer, code_editor, "Writes code in")
+
+'Code editor
+Rel(code_editor, file_syst, "Reads/Writes source files and configuration")
+Rel(code_editor, conf_res, "Calls Prettier's Javascript API")
+
+'Cli
+Rel(cli, file_syst, "Reads raw files/configs and overwrites them with formatted code")
+Rel(cli, conf_res, "Passes the translated command")
+
+'Core engine internal links
+Rel(conf_res,parser,  "Passes style rules")
+Rel(parser,instr_builder,  "Passes AST")
+Rel(instr_builder,printer,  "Passes passes AST's intermediate representation (Doc)")
+
+
+'Core engine external links
+Rel(parser,language_plugin,  "Asks for the right translator")
+Rel(instr_builder,language_plugin,  "Looks for the right layout")
+
+'Output flows
+Rel(printer, code_editor, "Returns formatted string in-memory")
+Rel(printer, cli, "Returns formatted string to be saved")
+
+
+
+@enduml
