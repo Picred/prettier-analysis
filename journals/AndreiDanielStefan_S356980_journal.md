@@ -17,3 +17,4 @@
 | 16/05/2026    | **Software Architecture**: Read official Prettier docs           | -                                              |     2      |
 |               | Expand C4 model draft with technologies and protocols            | C4 DSL Extension, `default-jre`, `graphviz`    |     -      |
 | 24/05/2026    | **Software Architecture**: Write Architecture section draft      | -                                              |     2      |
+|               | Write Overview section draft                                     | -                                              |     1      |
