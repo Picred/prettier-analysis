@@ -1,0 +1,45 @@
+@startuml 
+title Prettier-Strategy Pattern
+skinparam backgroundcolor ffffff
+skinparam defaultFontName "Arial"
+skinparam classAttributeIconSize 0
+
+skinparam class {
+    BackgroundColor<<Context>> #E6F3FF
+    BorderColor<<Context>> #438dd5
+    BackgroundColor<<Interface>> #F5F5F5
+    BorderColor<<Interface>> #707070
+    BackgroundColor<<ConcreteStrategy>> #85bbf0
+    BorderColor<<ConcreteStrategy>> #438dd5
+}
+
+class "Core Engine" as CoreContext <<Context>> {
+  + format(text: String)
+}
+
+interface "Plugin Contract" as PluginStrategy <<Interface>> {
+  + parse()
+  + print()
+}
+
+class "JS Plugin" as JSStrategy <<ConcreteStrategy>> {
+  + parse()
+  + print()
+}
+
+class "CSS Plugin" as CSSStrategy <<ConcreteStrategy>> {
+  + parse()
+  + print()
+}
+
+class "GraphQL Plugin" as GraphQLStrategy <<ConcreteStrategy>> {
+  + parse()
+  + print()
+}
+
+CoreContext -down-> PluginStrategy : "seleziona a runtime"
+JSStrategy .up.|> PluginStrategy : "implementa"
+CSSStrategy .up.|> PluginStrategy : "implementa"
+GraphQLStrategy .up.|> PluginStrategy : "implementa"
+
+@enduml

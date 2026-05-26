@@ -1,0 +1,41 @@
+@startuml Prettier_Builder_Semplificato
+
+title Builder Pattern in Prettier (Modello GoF)
+
+skinparam backgroundcolor ffffff
+skinparam defaultFontName "Arial"
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+
+skinparam class {
+    BackgroundColor<<Director>> #F5F5F5
+    BorderColor<<Director>> #707070
+    BackgroundColor<<Builder>> #E6F3FF
+    BorderColor<<Builder>> #438dd5
+    BackgroundColor<<Product>> #85bbf0
+    BorderColor<<Product>> #438dd5
+}
+
+
+
+class "Printer Logic" as Director <<Director>>
+
+class "Builder API" as Builder <<Builder>> {
+  + buildPart() : void
+}
+
+class "Utility Functions\n(group, indent, ifBreak)" as ConcreteBuilder <<Builder>> {
+  + buildPart() : void
+}
+
+class "Doc Structure" as Product <<Product>>
+
+
+
+
+Builder <|-right- ConcreteBuilder
+
+ConcreteBuilder .down.> Product : <<create>>
+
+@enduml

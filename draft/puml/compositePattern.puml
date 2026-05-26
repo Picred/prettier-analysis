@@ -1,0 +1,62 @@
+@startuml Prettier_Composite_Fixed_Spaced
+
+title Composite Pattern in Prettier (Modello GoF)
+
+skinparam backgroundcolor ffffff
+skinparam defaultFontName "Arial"
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+' --- SPAZIATURA ESTREMA E LINEE ORTOGONALI ---
+skinparam nodesep 130
+skinparam ranksep 130
+skinparam linetype ortho
+
+' --- STILI COORDINATI ---
+skinparam class {
+    BackgroundColor<<Client>> #E6F3FF
+    BorderColor<<Client>> #438dd5
+    BackgroundColor<<Component>> #F5F5F5
+    BorderColor<<Component>> #707070
+    BackgroundColor<<Node>> #85bbf0
+    BorderColor<<Node>> #438dd5
+}
+
+' --- ENTITÀ E RUOLI ---
+
+class "Rendering Engine" as RenderClient <<Client>>
+
+class "Doc" as DocComponent <<Component>> {
+  + evaluateLayout()
+  + add(Doc)
+  + remove(Doc)
+  + getChild()
+}
+
+class "Leaf\n(String, Line Break)" as LeafNode <<Node>> {
+  + evaluateLayout()
+}
+
+class "Composite\n(Group, Indent, Align)" as CompositeNode <<Node>> {
+  + evaluateLayout()
+  + add(Doc)
+  + remove(Doc)
+  + getChild()
+}
+
+' --- RELAZIONI GOF ---
+
+' Il Client invoca l'interfaccia comune
+RenderClient -right-> DocComponent
+
+' Ereditarietà allungata (3 trattini invece di 2 per dare più respiro verticale)
+DocComponent <|--- LeafNode
+DocComponent <|--- CompositeNode
+
+' Trucco: linea nascosta per forzare la spaziatura orizzontale
+LeafNode -[hidden]right- CompositeNode
+
+' Aggregazione che esce verso DESTRA prima di salire, creando un percorso pulito a "L"
+CompositeNode o-right- "0..*" DocComponent : " child "
+
+@enduml

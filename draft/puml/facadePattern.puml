@@ -1,0 +1,48 @@
+@startuml 
+
+title Prettier-Facade Pattern
+
+skinparam backgroundcolor ffffff
+skinparam defaultFontName "Arial"
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+
+skinparam class {
+    BackgroundColor<<Client>> #F5F5F5
+    BorderColor<<Client>> #707070
+    BackgroundColor<<Facade>> #E6F3FF
+    BorderColor<<Facade>> #438dd5
+    BackgroundColor<<Subsystem>> #85bbf0
+    BorderColor<<Subsystem>> #438dd5
+}
+
+
+class "External Tools\n(VS Code, CLI Wrapper)" as Client <<Client>>
+
+package "Prettier Internal Machinery" {
+    
+    class "Facade\n(src/index.js)" as Facade <<Facade>> {
+      + format()
+      + check()
+    }
+
+    class "Core Engine\n(src/main/core.js)" as Core <<Subsystem>>
+    class "Config Resolvers" as Config <<Subsystem>>
+    class "Plugin Loaders" as Loaders <<Subsystem>>
+    class "Comment Logic" as Comments <<Subsystem>>
+
+
+    Facade -down-> Core
+    Facade -down-> Config
+    Facade -down-> Loaders
+    Facade -down-> Comments
+    
+    Core -right-> Comments
+    Config -right-> Loaders
+}
+
+
+Client -down-> Facade
+
+@enduml

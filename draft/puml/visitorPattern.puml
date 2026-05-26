@@ -1,0 +1,54 @@
+@startuml 
+
+title Prettier-Visitor Pattern
+
+skinparam backgroundcolor ffffff
+skinparam defaultFontName "Arial"
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+
+skinparam class {
+    BackgroundColor<<Visitor>> #E6F3FF
+    BorderColor<<Visitor>> #438dd5
+    BackgroundColor<<Element>> #85bbf0
+    BorderColor<<Element>> #438dd5
+}
+
+
+
+class "Core Engine" as Client
+
+interface "Printer Contract" as Visitor <<Visitor>> {
+  + print(node)
+}
+
+class "JS Printer (estree.js)" as ConcreteVisitor1 <<Visitor>> {
+  + print(node)
+}
+
+class "CSS Printer (css.js)" as ConcreteVisitor2 <<Visitor>> {
+  + print(node)
+}
+
+interface "AST Node" as Element <<Element>> {
+  + type: String
+}
+
+class "IfStatement" as ConcreteElemA <<Element>> {
+}
+
+class "BinaryExpression" as ConcreteElemB <<Element>> {
+}
+
+
+Client -right-> Visitor
+Client -down-> Element
+
+ConcreteVisitor1 .up.|> Visitor
+ConcreteVisitor2 .up.|> Visitor
+
+ConcreteElemA .up.|> Element
+ConcreteElemB .up.|> Element
+
+@enduml
