@@ -88,6 +88,7 @@ An extensive analysis of the source code revealed a sophisticated usage of archi
 **Classes/Role:** 
 Within the Prettier architecture, the Strategy Pattern is implemented by treating the Core orchestration modules (`src/main/core.js` and `src/main/index.js`) as the Context, which manages the high-level formatting workflow. The system defines a Strategy Interface through a strict Plugin Contract, requiring every language module to expose standardized capabilities such as `parse` and `print`. These requirements are fulfilled by Concrete Strategies—the individual plugin modules found in the `src/language-*` directories, such as the `src/language-css/parser-postcss.js` or the `src/language-html/index.js`. By delegating specific parsing and printing rules to these active strategies, Prettier solves the problem of behavioral variation without tightly coupling the core engine to the intricacies of specific syntaxes like GraphQL or CSS. This design guarantees the Open/Closed Principle, allowing the system to remain highly extensible; new languages can be integrated entirely by adding new strategies, which the core then selects at runtime based on file extensions without requiring any internal modifications.
 
+
 **Alternatives (Pros & Cons):** 
 - *Alternative:* A massive monolithic procedural `switch-case` statement residing in the core.
 - *Pros:* Easier to trace execution flow linearly for very small, single-language projects. Might be marginally faster by avoiding dynamic loading.

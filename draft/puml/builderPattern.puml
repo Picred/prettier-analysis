@@ -1,4 +1,4 @@
-@startuml Prettier_Builder_Semplificato
+@startuml 
 
 title Builder Pattern in Prettier (Modello GoF)
 
