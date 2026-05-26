@@ -4,8 +4,6 @@
 
 ### Method and Tools Used
 
-*TO DO: valuta se sintetizzare*
-
 The dependency analysis was performed to evaluate the code and knowledge dependencies among the software modules within the Prettier project, specifically focusing on the `src/` directory to isolate the core business logic.
 To extract code dependencies based on explicit `import` statements, tools such as `madge`, `dependency-cruiser`, and custom PowerShell scripts combined with standard Unix text processing utilities (`grep`, `awk`) were utilized. Furthermore, `dependency-cruiser` output metrics were analyzed to calculate Afferent Coupling (Fan-in), Efferent Coupling (Fan-out), Instability, and detecting circular dependencies.
 For knowledge dependencies (logical coupling), `git log` was employed to analyze the recent commit history (e.g., the last 1000 commits from tags like `3.8.2`) to identify files that are frequently modified together in the same commits.
@@ -30,15 +28,11 @@ command: grep "src/.*\.js" dependency_metrics.txt | sort -k5 -nr | head -n 3
 5. `src/language-markdown/printer-markdown.js` (21 imports)
 6. `src/index.js` (18 imports)
 
-*TO DO: valutare se aggiungere info significative dei file utilizzati (es. anche grafici esplicativi). POSSIBILE: valutare di aggiungere codice Plant UML direttamente nel report.*
-
 These files function as architectural "Hubs" or "Orchestrators" and show a very high Instability index (close to 97%). Prettier operates by parsing source code into an Abstract Syntax Tree (AST) and then transforming it into a formatted document. The language-specific printers (`flow.js`, `typescript.js`, `estree.js`) are "builders" that need to handle every single type of language construct (arrays, classes, functions, loops). Consequently, they aggregate numerous specialized micro-modules for each construct, explaining their immense fan-out. Files like `index.js` and `production-plugins.js` serve as system entry points, aggregating all supported plugins and languages to expose a unified API to the user.
 
 **High Afferent Coupling (Fan-in) - The most "popular" files:**
 
 Certain files are heavily depended upon; if they break, the system collapses. These modules act as architectural gravity centers: their high coupling means any regression triggers a ripple effect, where a single breaking change causes widespread instability across the entire codebase.
-
-*TO DO: valutare se tenere o eliminare in base alla qt. di caratteri ottenuti*
 
 1. `src/document/index.js` (Over 70 incoming dependencies): Prettier relies on an intermediate formatting representation called "Doc". This file exports the primitives required to build this format. Every supported language printer must import it.
 2. `src/language-js/utilities/node-types.js` (Over 35 incoming dependencies): Acts as a dictionary for the AST node types, constantly queried by the JavaScript printing modules.
@@ -56,15 +50,6 @@ command: grep "src/.*\.js" dependency_metrics.txt | sort -k5 -n | head -n 3
 4. `src/document/printer/indent.js`
 
 These files are atomic utilities or "Leaves" located at the base of the dependency pyramid, boasting an Efferent Coupling (Ce) of 0. They contain pure logic, constant definitions, or simple helper algorithms. By strictly following the Single Responsibility Principle and avoiding core imports, they provide extreme stability. If the system undergoes massive refactoring, these leaf nodes will likely remain unchanged.
-
-*TO DO: valutare se tenere o eliminare in base alla qt. di caratteri ottenuti. MOMENTANEAMENTE DA TOGLIERE*
-
-**Structural Integrity and Circular Dependencies:**
-A circular dependency check using `madge --circular` identified two cycles located within the core formatting engine:
-1. `document/builders/index.js` → `document/builders/align.js` → `document/builders/indent.js` → `document/utilities/assert-doc.js` → `document/utilities/index.js`
-2. `document/utilities/assert-doc.js` → `document/utilities/index.js`
-
-While circular dependencies are usually an "architectural smell" violating the Acyclic Dependencies Principle (ADP), their presence here is driven by the highly recursive nature of the "Doc" data structure. Builders and utilities operate symbiotically on the same recursive definitions.
 
 ### Knowledge Dependencies
 Knowledge dependencies were identified by evaluating logical coupling through co-change analysis in the Git history.
@@ -97,9 +82,7 @@ While many co-changes correctly mirrored code dependencies (e.g., core pipeline 
 
 ## 2. Patterns
 
-*TO DO: valuta di rendere in forma maggiormente discorsivo la parte iniziale. mantieni invariate le alternative *
-
-An extensive analysis of the source code revealed a sophisticated usage of architectural design patterns, necessary to manage the extreme complexity of a multi-language AST-based formatter. Below are 6 key patterns identified in the codebase.
+An extensive analysis of the source code revealed a sophisticated usage of architectural design patterns, necessary to manage the extreme complexity of a multi-language AST-based formatter. Below are 5 key patterns identified in the codebase.
 
 ### 2.1 Strategy Pattern (Behavioral)
 **Classes/Role:** 
@@ -149,8 +132,6 @@ Prettier utilizes the Builder Pattern to streamline the dynamic creation of its 
 ---
 
 ## 3. Summary
-
-*TO DO: valutare se aggiungere dei grafici specifici pattern Prettier*
 
 **Summary of the findings of the two design aspects:**
 The architectural design of Prettier demonstrates an exceptional degree of modularity, deliberately engineered to tackle the immense complexity of supporting dozens of different programming languages with perfectly consistent formatting rules. 
