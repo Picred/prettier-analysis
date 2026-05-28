@@ -18,3 +18,5 @@
 |               | Expand C4 model draft with technologies and protocols            | C4 DSL Extension, `default-jre`, `graphviz`    |     -      |
 | 24/05/2026    | **Software Architecture**: Write Architecture section draft      | -                                              |     2      |
 |               | Write Overview section draft                                     | -                                              |     1      |
+| 28/05/2026    | **Software Design**: Generate design pattern schemas             | `plantuml`                                     |     0.5    |
+|               | Improved cherence between design  schemas                        | -                                              |     0.5    |

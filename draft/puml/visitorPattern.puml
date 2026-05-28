@@ -45,10 +45,10 @@ class "BinaryExpression" as ConcreteElemB <<Element>> {
 Client -right-> Visitor
 Client -down-> Element
 
-ConcreteVisitor1 .up.|> Visitor
-ConcreteVisitor2 .up.|> Visitor
+ConcreteVisitor1 .up.|> Visitor: " implements"
+ConcreteVisitor2 .up.|> Visitor: " implements"
 
-ConcreteElemA .up.|> Element
-ConcreteElemB .up.|> Element
+ConcreteElemA .up.|> Element : " implements"
+ConcreteElemB .up.|> Element : " implements"
 
 @enduml

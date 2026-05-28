@@ -17,7 +17,7 @@ class "Core Engine" as CoreContext <<Context>> {
   + format(text: String)
 }
 
-interface "Plugin Contract" as PluginStrategy <<Interface>> {
+interface "Plugin Contract" as PluginStrategy <<Strategy>> {
   + parse()
   + print()
 }
@@ -37,9 +37,9 @@ class "GraphQL Plugin" as GraphQLStrategy <<ConcreteStrategy>> {
   + print()
 }
 
-CoreContext -down-> PluginStrategy : "seleziona a runtime"
-JSStrategy .up.|> PluginStrategy : "implementa"
-CSSStrategy .up.|> PluginStrategy : "implementa"
-GraphQLStrategy .up.|> PluginStrategy : "implementa"
+CoreContext -down-> PluginStrategy
+JSStrategy .up.|> PluginStrategy : "implements"
+CSSStrategy .up.|> PluginStrategy : "implements"
+GraphQLStrategy .up.|> PluginStrategy : "implements"
 
 @enduml

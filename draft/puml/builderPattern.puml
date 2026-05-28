@@ -1,6 +1,6 @@
 @startuml 
 
-title Builder Pattern in Prettier (Modello GoF)
+title Prettier-Builder Pattern
 
 skinparam backgroundcolor ffffff
 skinparam defaultFontName "Arial"
@@ -25,14 +25,14 @@ class "Builder API" as Builder <<Builder>> {
   + buildPart() : void
 }
 
-class "Utility Functions\n(group, indent, ifBreak)" as ConcreteBuilder <<Builder>> {
+class "Utility Functions" as ConcreteBuilder <<ConcreteBuilder>> {
   + buildPart() : void
 }
 
 class "Doc Structure" as Product <<Product>>
 
 
-
+Director ..> Builder
 
 Builder <|-right- ConcreteBuilder
 
