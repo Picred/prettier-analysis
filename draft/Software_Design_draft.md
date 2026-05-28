@@ -140,3 +140,27 @@ The architectural design of Prettier demonstrates an exceptional degree of modul
 From the **Dependency Analysis**, the repository exhibits a healthy, pyramid-like structure. Complex orchestrators ("Hubs") manage the macroscopic execution flow by aggregating numerous dependencies, while at the bottom, "Leaf" utilities provide zero-dependency, hyper-stable support functions. The discovery of specific circular dependencies in the core highlights the recursive nature of formatting algorithms rather than poor design. The **Knowledge Dependencies** via co-change analysis provided vital insight: physical code coupling is only half the story. The plugin-based architecture forces developers to synchronize updates across statically independent files (such as multiple parallel parsers or cross-language plugin APIs), proving that architectural interfaces often dictate development workflows stronger than explicit imports.
 
 From the **Pattern Analysis**, Prettier's structural and behavioral decisions perfectly align with its core mission. By utilizing the **Facade** pattern, it hides a massive ecosystem behind a trivial API. The **Strategy** pattern guarantees absolute extensibility, allowing community plugins to seamlessly integrate. The **Visitor** pattern ensures that the system's formatting logic remains untethered from external, third-party data structures (ASTs). Finally, the combination of **Composite** and **Builder** patterns orchestrates Prettier's true innovation: an Intermediate Representation (Doc) that mathematically guarantees optimal line wrapping and grouping by calculating spatial constraints before any text is actually rendered. Together, these design aspects ensure Prettier remains robust, testable, and infinitely scalable.
+
+---
+
+## Appendix: Design Pattern Diagrams
+
+# Strategy Pattern
+![Strategy Pattern](../media/strategy-pattern.png)
+> *Figure 1: Strategy Pattern Diagram*
+
+# Visitor Pattern
+![Visitor Pattern](../media/visitor-pattern.png)
+> *Figure 2: Visitor Pattern Diagram*
+
+# Composite Pattern
+![Composite Pattern](../media/composite-pattern.png)
+> *Figure 3: Composite Pattern Diagram*
+
+# Facade Pattern
+![Facade Pattern](../media/facade-pattern.png)
+> *Figure 4: Facade Pattern Diagram*
+
+# Builder Pattern
+![Builder Pattern](../media/builder-pattern.png)
+> *Figure 5: Builder Pattern Diagram*
