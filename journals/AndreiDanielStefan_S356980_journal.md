@@ -20,3 +20,4 @@
 |               | Write Overview section draft                                     | -                                              |     1      |
 | 28/05/2026    | **Software Design**: Generate design pattern schemas             | `plantuml`                                     |     0.5    |
 |               | Improved cherence between design  schemas                        | -                                              |     0.5    |
+| 07/06/2026    | **Software Design / Architecture**: Reports revision             | -                                              |     1    |
