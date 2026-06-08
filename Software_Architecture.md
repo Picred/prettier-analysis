@@ -43,9 +43,9 @@ The Container diagram zooms into the Prettier system, revealing the high-level e
 
 - **API Layer (Node.js/JavaScript):** The programmatic interface that exports isolated functions (e.g., `format()`). It serves as the primary gateway for integrations (like IDE plugins) that need to format strings in memory without writing to the disk.
 - **CLI Layer (Node.js):** The command-line interface. It parses arguments, manages batch file processing, and handles standard input/output. Crucially, the CLI layer acts as a wrapper that internally invokes the API Layer; developers can bypass the CLI entirely by using the API directly.
-- **Configuration Layer (JavaScript/cosmiconfig):** Responsible for resolving, parsing, and applying configuration rules (e.g., `.prettierrc`, `.editorconfig`). This layer reads from the external file system asynchronously and injects the resolved options into the API/Core engine.
-- **Plugin System (JavaScript):** A dynamic loading mechanism for language parsers and printers. It allows Prettier to support new languages without modifying the core engine.
+- **Plugins (JavaScript):** A dynamic loading mechanism for language parsers and printers. It allows Prettier to support new languages without modifying the core engine.
 - **Processing Engine (JavaScript):** The core container housing the central formatting logic. It is essentially a pure function that takes an unformatted string and configuration options, and returns a formatted string.
+- **Document Engine:** A core algorithmic engine that manages text geometry and physical layout. It defines the intermediate representation primitives (Doc IR) and executes the line-breaking algorithm to compute wrapping and render the final formatted string.
 
 ### Relationship with Clean Architecture
 
@@ -60,13 +60,14 @@ The **CLI Layer** and **API Layer** act as Interface Adapters (or Delivery Mecha
 
 The Component diagram breaks down the **Processing Engine** container into its constituent functional parts, tracking the lifecycle of code formatting. We intentionally discard the internal components of the CLI, API, and Configuration containers from this level of analysis; as established by our Clean Architecture mapping, these containers act merely as interface adapters. Their internal complexities do not represent the core architectural behavior of the system, which is centralized entirely within the pure logic of the Processing Engine.
 
-*(Insert Component Diagram Here)*
+
 ![Component View Diagram](./media/Component_View.jpeg)
 > *Figure 3: Component View Diagram*
 
 ### Components and Explanations
 
-- **Parser Layer:** Receives the raw string of source code from the API Layer. It consults the Configuration Layer and the Plugin System to select the appropriate third-party or internal parser (e.g., Babel for JavaScript, PostCSS for CSS). It transforms the string into an Abstract Syntax Tree (AST).
+- **Configuration Layer (JavaScript/cosmiconfig):** Responsible for resolving, parsing, and applying configuration rules (e.g., `.prettierrc`, `.editorconfig`). This layer reads from the external file system asynchronously and injects the resolved options into the API/Core engine.
+- **Parser Layer:** Receives the raw string of source code from the API Layer. It consults the Configuration Layer and the Plugins to select the appropriate third-party or internal parser (e.g., Babel for JavaScript, PostCSS for CSS). It transforms the string into an Abstract Syntax Tree (AST).
 - **AST Processing:** Receives the raw AST. This component is responsible for generic AST massaging, which includes normalizing nodes and securely attaching comments to the correct AST nodes before printing begins. The communication here is synchronous, passing the in-memory AST object.
 - **Printing Layer:** Traverses the manipulated AST and translates the tree structure into Prettier's intermediate representation (the `Doc` builder format). It then runs the core formatting algorithm (measuring line lengths, handling line breaks) to output the final formatted string.
 
@@ -74,8 +75,8 @@ The Component diagram breaks down the **Processing Engine** container into its c
 
 When analyzing the Component level (Level 3), the architecture generally adheres to SOLID principles, but we can observe nuanced design trade-offs:
 
-- **Open/Closed Principle (OCP):** Prettier strictly respects OCP through its Plugin System. The parser and printing layers are open for extension (by adding new language plugins) but closed for modification. The core engine does not need to be rewritten to support a new language like Rust or SQL; it simply dynamically loads a new concrete strategy.
-- **Single Responsibility Principle (SRP) Violations:** A potential violation of SRP can be observed historically in the `AST Processing` and `Printing Layer` regarding comment handling. Comments are notoriously difficult to format because they do not structurally belong to the AST in most languages. If a single central component is responsible for attaching comments for *all* syntax variations across multiple languages, it gathers multiple reasons to change (one for every quirk of a specific language's comment syntax). While Prettier mitigates this by delegating to plugins, any central fallback logic for generic AST massaging often risks bloating and violating SRP.
+- **Open/Closed Principle (OCP):** Prettier strictly respects OCP through its Plugins. The parser and printing layers are open for extension (by adding new language plugins) but closed for modification. The core engine does not need to be rewritten to support a new language like Rust or SQL; it simply dynamically loads a new concrete strategy.
+- **Single Responsibility Principle (SRP) Violations:** A potential violation of SRP can be observed historically in the `AST Processing` and `Printing Layer` regarding comment handling. Comments are notoriously difficult to format because they do not structurally belong to the AST in most languages. If a single central component is responsible for attaching comments for *all* syntax variations across multiple languages, it gathers multiple reasons to change (one for every quirk of a specific language's comment syntax). While Prettier mitigates this by delegating to plugins, any central fallback logic for generic AST massaging often risks bloating and violating SRP. More precisely, the primary contributor to the violation of SRP is the Printing Layer (e.g., `src/language-js/print/estree.js`): it manages both the iteration on the AST tree and the node dispatching
 
 ---
 
@@ -92,4 +93,4 @@ To support this architectural reasoning, an analysis of the system's dependencie
 1. **High Efferent/Afferent Coupling (Hubs and Gravity Centers):** Modules acting as API entry points or core orchestrators (e.g., src/main/core.js, src/index.js) exhibit high Efferent Coupling (Fan-out). They act as architectural hubs, absorbing complexity by explicitly importing and coordinating dozens of internal subsystems to provide a unified API to the outside world. Conversely, core foundational components, such as the Doc builder utilities, exhibit high Afferent Coupling (Fan-in). These act as true architectural gravity centers; they import very little, but the vast majority of the system depends on them. If these foundational modules break, the ripple effect causes the entire system to collapse.
 2. **Low Efferent Coupling (The Leaves):** At the base of the dependency pyramid are atomic utilities with an Efferent Coupling (Fan-out) of exactly 0. These contain pure algorithms and string manipulation helpers. Their zero-dependency nature makes them hyper-stable, embodying high cohesion and ensuring that massive system refactors will likely leave them untouched.
 
-Furthermore, analyzing **Knowledge Dependencies** via Git co-change analysis demonstrates that the Plugin System architecture forces developers to synchronize updates across statically independent files. This proves that the architectural interfaces (the plugin contracts) dictate development workflows and logical coupling far stronger than the explicit `import` statements, validating the loose coupling visually represented by dashed lines in the C4 models.
+Furthermore, analyzing **Knowledge Dependencies** via Git co-change analysis demonstrates that the Plugins architecture forces developers to synchronize updates across statically independent files. This proves that the architectural interfaces (the plugin contracts) dictate development workflows and logical coupling far stronger than the explicit import statements, revealing an implicit, tight logical coupling behind the static loose coupling visually represented by dashed lines in the C4 models.
