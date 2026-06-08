@@ -16,7 +16,7 @@ Throughout the diagrams, different notations are used to indicate the type of re
 
 The System Context diagram illustrates Prettier's macroscopic integration into a developer's workflow, highlighting its boundaries and interactions with external environments.
 
-![Context View Diagram](./media/System_Context_View.jpeg)
+![Context View Diagram](./media/Component_View.png)
 > *Figure 1: Context View Diagram*
 
 ### Entities and Explanations
@@ -36,7 +36,7 @@ The Developer interacts directly with the IDE (GUI interaction) and the CLI (Ter
 
 The Container diagram zooms into the Prettier system, revealing the high-level execution blocks and how responsibilities are distributed before reaching the core formatting logic.
 
-![Container View Diagram](./media/Container_View.jpeg)
+![Container View Diagram](./media/Container_View.png)
 > *Figure 2: Container View Diagram*
 
 ### Containers and Explanations

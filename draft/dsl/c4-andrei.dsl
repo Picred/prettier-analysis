@@ -10,10 +10,12 @@ workspace "Prettier 3.8.x" "C4 Model for Prettier Project" {
                 cliLayer = container "CLI Layer" "Parses command-line arguments, reads files, and invokes API/Core." "Node.js"
                 
                 // Layers Interni
-                configLayer = container "Configuration Layer" "Resolves and applies configuration rules (e.g., .prettierrc)." "JavaScript / cosmiconfig"
-                pluginLayer = container "Plugin System" "Dynamic loading of language parsers and printers." "JavaScript"
+                // configLayer = container "Configuration Layer" "Resolves and applies configuration rules (e.g., .prettierrc)." "JavaScript / cosmiconfig"
+                plugins = container "Plugins" "Dynamic loading of language parsers and printers." "JavaScript"
+                docEngine = container "Document Engine" "Intermediate representation translator." "JavaScript"
                 
                 processingEngine = container "Processing Engine" "Core formatting logic (Pure function: string-in, string-out)." "JavaScript" {
+                    configLayer = component "Configuration Layer" "Resolves and applies configuration rules (e.g., .prettierrc)." "JavaScript / cosmiconfig"
                     parserLayer = component "Parser Layer" "Selects and applies the language-specific parser." "JavaScript"
                     astProcessing = component "AST Processing" "AST generation and transformation. Manages comments attached to nodes." "JavaScript"
                     printingLayer = component "Printing Layer" "Traverses the AST and generates the formatted string of code." "JavaScript"
@@ -33,22 +35,23 @@ workspace "Prettier 3.8.x" "C4 Model for Prettier Project" {
         # Container Relationships
         ide -> apiLayer "Reads / Writes code via API calls" "Node.js API (Async)"
         cicd -> cliLayer "Executes formatting tasks" "CLI Standard I/O (Sync)" "Solid"
+        printingLayer -> docEngine "Send intermediate doc commands." "Javascript (Async)"
 
         cliLayer -> apiLayer "Invokes formatting functions" "Internal Function Call" "Solid"
         cliLayer -> configLayer "Triggers config resolution" "Internal Function Call" "Solid"
         cliLayer -> fs "Reads/Writes source files" "OS File System API (Async)"
 
         apiLayer -> configLayer "Resolves configuration" "Internal Function Call" "Solid"
-        apiLayer -> pluginLayer "Initializes plugins" "Dynamic Import" "Solid"
-        apiLayer -> processingEngine "Delegates string formatting" "Internal Function Call" "Solid"
+        apiLayer -> plugins "Initializes plugins" "Dynamic Import" "Solid"
+        // apiLayer -> processingEngine "Delegates string formatting" "Internal Function Call" "Solid"
         
         configLayer -> fs "Reads config files (.prettierrc)" "OS File System API (Async)"
 
         # Component relationships
         configLayer -> parserLayer "Injects config rules" "In-memory Object Reference" "Solid"
-        parserLayer -> pluginLayer "Takes custom parsers/printers" "In-memory Object Reference"
+        parserLayer -> plugins "Takes custom parsers/printers" "In-memory Object Reference"
         
-        apiLayer -> parserLayer "Passes source code string" "Internal Function Call (Sync)" "Solid"
+        // apiLayer -> parserLayer "Passes source code string" "Internal Function Call (Sync)" "Solid"
         
         parserLayer -> astProcessing "Passes raw AST" "In-memory AST Object (Sync)" "Solid"
         astProcessing -> printingLayer "Passes massaged AST" "In-memory AST Object (Sync)" "Solid"
@@ -71,7 +74,7 @@ workspace "Prettier 3.8.x" "C4 Model for Prettier Project" {
             include *
             include apiLayer
             include configLayer
-            include pluginLayer
+            include plugins
             autoLayout lr
         }
 
