@@ -5,7 +5,7 @@
 ### Method and Tools Used
 
 The dependency analysis was performed to evaluate the code and knowledge dependencies among the software modules within the Prettier project, specifically focusing on the `src/` directory to isolate the core business logic.
-To extract code dependencies based on explicit `import` statements, tools such as `madge`, `dependency-cruiser`, and custom PowerShell scripts combined with standard Unix text processing utilities (`grep`, `awk`) were utilized. Furthermore, `dependency-cruiser` output metrics were analyzed to calculate Afferent Coupling (Fan-in), Efferent Coupling (Fan-out), Instability, and detecting circular dependencies.
+To extract code dependencies based on explicit `import` statements, tools such as `madge`, `dependency-cruiser`, and custom PowerShell scripts combined with standard Unix text processing utilities (`grep`, `awk`) were utilized. Furthermore, `dependency-cruiser` output metrics were analyzed to calculate Afferent Coupling (Fan-in), Efferent Coupling (Fan-out) and Instability.
 For knowledge dependencies (logical coupling), `git log` was employed to analyze the recent commit history (e.g., the last 1000 commits from tags like `3.8.2`) to identify files that are frequently modified together in the same commits.
 
 ```bash
@@ -18,65 +18,123 @@ Based on the explicit imports in the source code, we investigated which files ac
 **High Efferent Coupling (Fan-out) - Files with the most dependencies:**
 
 ```bash
-command: grep "src/.*\.js" dependency_metrics.txt | sort -k5 -nr | head -n 3
+command: grep "src/.*\.js" dependency_metrics.txt | sort -k5 -nr | head -n 6
 ```
 
 1. `src/language-js/print/flow.js` (35 imports)
 2. `src/language-js/print/typescript.js` (33 imports)
 3. `src/language-js/print/estree.js` (29 imports)
-4. `src/main/plugins/builtin-plugins/production-plugins.js` (27 imports)
-5. `src/language-markdown/printer-markdown.js` (21 imports)
-6. `src/index.js` (18 imports)
+4. `src/plugins/builtin-plugins-proxy.js` (27 imports)
+5. `src/index.js` (22 imports)
+6. `src/language-markdown/printer-markdown.js` (21 imports)
 
-These files function as architectural "Hubs" or "Orchestrators" and show a very high Instability index (close to 97%). Prettier operates by parsing source code into an Abstract Syntax Tree (AST) and then transforming it into a formatted document. The language-specific printers (`flow.js`, `typescript.js`, `estree.js`) are "builders" that need to handle every single type of language construct (arrays, classes, functions, loops). Consequently, they aggregate numerous specialized micro-modules for each construct, explaining their immense fan-out. Files like `index.js` and `production-plugins.js` serve as system entry points, aggregating all supported plugins and languages to expose a unified API to the user.
+
+These files function as architectural "Hubs" or "Orchestrators" and show a very high Instability index (close to 97%). Prettier operates by parsing source code into an Abstract Syntax Tree (AST) and then transforming it into a formatted document. The language-specific printers (`flow.js`, `typescript.js`, `estree.js`) are "builders" that need to handle every single type of language construct (arrays, classes, functions, loops). Consequently, they aggregate numerous specialized micro-modules for each construct, explaining their immense fan-out. Files like `index.js` and `builtin-plugins-proxy.js` serve as system entry points, aggregating all supported plugins and languages to expose a unified API to the user.
 
 **High Afferent Coupling (Fan-in) - The most "popular" files:**
 
 Certain files are heavily depended upon; if they break, the system collapses. These modules act as architectural gravity centers: their high coupling means any regression triggers a ripple effect, where a single breaking change causes widespread instability across the entire codebase.
 
-1. `src/document/index.js` (Over 70 incoming dependencies): Prettier relies on an intermediate formatting representation called "Doc". This file exports the primitives required to build this format. Every supported language printer must import it.
-2. `src/language-js/utilities/node-types.js` (Over 35 incoming dependencies): Acts as a dictionary for the AST node types, constantly queried by the JavaScript printing modules.
+```bash
+command: grep "src/.*\.js" dependency_metrics.txt | sort -k4 -nr | head -n 5
+```
+
+1. `src/document/index.js` (Over 90 incoming dependencies): Prettier relies on an intermediate formatting representation called "Doc". This file exports the primitives required to build this format. Every supported language printer must import it.
+2. `src/language-js/utilities/index.js` (Over 40 incoming dependencies): Acts as a dictionary for the AST node types, constantly queried by the JavaScript printing modules.
 3. Cross-cutting utilities (e.g., `utilities/is-non-empty-array.js` or `main/comments/print.js`): Universal operations centralized to prevent code duplication, imported across parsers and printers of all languages.
 
 **Low Efferent Coupling - Files with the least dependencies:**
 
 ``` bash
-command: grep "src/.*\.js" dependency_metrics.txt | sort -k5 -n | head -n 3
+command: grep "src/.*\.js" dependency_metrics.txt | sort -k5 -n | head -n 5
 ```
 
 1. `src/cli/options/create-minimist-options.js`
-2. `src/common/ast-path.js`
-3. `src/common/errors.js`
-4. `src/document/printer/indent.js`
+2. `src/common/errors.js`
+3. `src/document/printer/indent.js`
+4. `src/common/parser-create-error.js`
+
+(`src/common/ast-path.js` is not shown in the output because it is a module imported by a lot of files, so it would not be correct to call it a stable leaf node)
 
 These files are atomic utilities or "Leaves" located at the base of the dependency pyramid, boasting an Efferent Coupling (Ce) of 0. They contain pure logic, constant definitions, or simple helper algorithms. By strictly following the Single Responsibility Principle and avoiding core imports, they provide extreme stability. If the system undergoes massive refactoring, these leaf nodes will likely remain unchanged.
 
 ### Knowledge Dependencies
 Knowledge dependencies were identified by evaluating logical coupling through co-change analysis in the Git history.
 
-``` bash
-command: git --no-pager log -n 100 --name-only --pretty=format:"--- COMMIT ---"
+*Command:*
+```bash
+git --no-pager log -n 500 --name-only --pretty=format:"--- COMMIT ---" -- src/ | python3 -c '
+import sys
+from itertools import combinations
+from collections import Counter
+
+lines = sys.stdin.read().splitlines()
+commits = []
+current_commit = []
+
+for line in lines:
+    if line == "--- COMMIT ---":
+        if current_commit:
+            commits.append(list(set(current_commit)))
+        current_commit = []
+    elif line.strip():
+        current_commit.append(line.strip())
+if current_commit:
+    commits.append(list(set(current_commit)))
+
+co_changes = Counter()
+for files in commits:
+    if len(files) > 1:
+        for pair in combinations(sorted(files), 2):
+            co_changes[pair] += 1
+
+print(f"{"Freq":<6} | {"File A":<45} | {"File B"}")
+print("-" * 100)
+for (file1, file2), count in co_changes.most_common(10):
+    print(f"{count:<6} | {file1:<45} | {file2}")
+'
 ```
+
+*Output:*
+| Freq | File A | File B | Result |
+|------|--------|--------|--------|
+| 11 | `src/language-js/parse/acorn.js` | `src/language-js/parse/babel.js` | Inconsistent |
+| 8 | `src/language-js/print/flow.js` | `src/language-js/print/function.js` | Inconsistent |
+| 8 | `src/language-js/print/flow.js` | `src/language-js/print/object.js` | Inconsistent |
+| 8 | `src/language-js/print/flow.js` | `src/language-js/print/type-annotation.js` | Consistent |
+| 8 | `src/language-js/print/function-parameters.js` | `src/language-js/print/type-annotation.js` | Inconsistent |
+| 8 | `src/language-js/print/object.js` | `src/language-js/print/typescript.js` | Inconsistent |
+| 8 | `src/language-js/print/type-annotation.js` | `src/language-js/print/typescript.js` | Inconsistent |
+| 8 | `src/language-html/embed.js` | `src/language-html/utilities/index.js` | Consistent |
+| 8 | `src/language-js/print/estree.js` | `src/language-js/utilities/index.js` | Consistent |
+| 7 | `src/language-js/parse/acorn.js` | `src/language-js/parse/espree.js` | Inconsistent |
 
 **Consistencies with Code Dependencies:**
 
-The following files represent the most significant instances where static code dependencies directly align with developer co-changes. Their high Efferent Coupling (Fan-out) marks them as the system's primary coordination hubs, where complexity is centralized to manage multi-faceted tasks:
+Among the ten strongest co-changing file pairs, only three also exhibit a direct static dependency relationship. In these cases, the commit history confirms the import relationships identified during the code dependency analysis.
 
-- **Language Printers (e.g., flow.js, typescript.js, estree.js, printer-markdown.js):**
-These are the most "fragile" modules in the codebase. Because they are responsible for the final output of complex languages, they act as logic aggregators. They must import a vast array of helper functions, AST utilities, and formatting primitives to handle every possible syntax permutation. Consequently, any change in the underlying utility layer requires a coordinated update within these printers.
-- **System Entry Points (e.g., src/index.js):**
-As the primary entry point, this file serves as the architectural glue. It explicitly imports the core formatting pipeline, configuration loaders, and plugin managers. Its high dependency count is a functional necessity to orchestrate the transition from raw input to formatted code.
-- **Centralized Utility Indexes and Proxies (e.g., language-js/utilities/index.js, builtin-plugins-proxy.js):**
-These modules function as traffic controllers. They centralize access to disparate sub-modules to provide a unified API for the rest of the system. Their dependency profile accurately reflects their role in reducing the complexity of other files by absorbing the coupling themselves.
+- **`flow.js` and `type-annotation.js`:**
+These files both co-change frequently and directly depend on each other through imports. Their synchronized evolution suggests that modifications to Flow-specific formatting rules often require updates to the type annotation logic.
+
+- **`embed.js` and `language-html/utilities/index.js`:**
+This pair represents another case where logical coupling matches static dependencies. Since `embed.js` relies on shared HTML utilities, changes affecting embedded-language formatting are naturally reflected in both files.
+
+- **`estree.js` and `language-js/utilities/index.js`:**
+The JavaScript printer and its utility module also show both co-change and direct import relationships. This indicates that updates to the ESTree printer frequently require adjustments to the supporting utility functions.
+
+Overall, these examples demonstrate that some knowledge dependencies are already made explicit in the source code through import relationships.
 
 **Inconsistencies with Code Dependencies:**
 
-While many co-changes correctly mirrored code dependencies (e.g., core pipeline components changing together), several glaring inconsistencies were uncovered where files share zero static code links yet possess strong logical dependencies:
+The majority of the strongest co-changing pairs do not share any direct import relationship. Out of the ten pairs identified, seven represent hidden logical dependencies that are invisible to the static dependency analysis.
 
-- **The JavaScript Parser Family:** Commits frequently modify `acorn.js`, `babel.js`, `espree.js`, `meriyah.js`, `oxc.js`, and `typescript.js` simultaneously. At a static level, these parsers are completely isolated alternative implementations for parsing JavaScript. They do not import one another. However, when Prettier adds support for a new JavaScript syntax or fixes a general parsing bug, every single supported parser must be updated to maintain system consistency.
-- **Cross-Language Plugin Interfaces:** Commits simultaneously touch files like `get-visitor-keys.js` or `pragma.js` across entirely distinct language directories (e.g., `language-css`, `language-html`, `language-markdown`). A CSS formatter has absolutely no code dependency on an HTML formatter. However, because Prettier uses a standardized plugin architecture, whenever the API contract between the core engine and plugins evolves, developers are forced to concurrently update the interface files of all supported languages.
-- **Package Management:** `package.json` and `yarn.lock` always co-change. This relationship reflects the Node.js ecosystem rules, completely detached from the application's internal code architecture.
-- **Test Files and Source Files:** Changing a source behavior requires updating the corresponding test snapshots (e.g., a `.js` printer update breaks Markdown formatting snapshots). The dependency is mediated entirely by the test runner framework, not explicit imports.
+- **Parallel parser implementations:**
+Files such as `acorn.js`, `babel.js`, and `espree.js` frequently change together even though they do not import one another. Their co-evolution suggests coordination requirements that are not represented in the source code structure.
+
+- **Related printer modules:**
+Several printer files, including `flow.js`, `function.js`, `object.js`, `function-parameters.js`, `type-annotation.js`, and `typescript.js`, appear repeatedly among the most common co-change pairs despite the absence of direct dependencies between them. Although these files are structurally independent, developers often modify them together, revealing a form of implicit coupling captured only by the commit history.
+
+Overall, the results show that static dependencies describe only part of the architecture. While import relationships reveal explicit code connections, co-change analysis exposes additional coordination requirements that remain hidden in the dependency structure.
 
 ---
 
@@ -157,6 +215,6 @@ Prettier utilizes the Builder Pattern to streamline the dynamic creation of its 
 **Summary of the findings of the two design aspects:**
 The architectural design of Prettier demonstrates an exceptional degree of modularity, deliberately engineered to tackle the immense complexity of supporting dozens of different programming languages with perfectly consistent formatting rules. 
 
-From the **Dependency Analysis**, the repository exhibits a healthy, pyramid-like structure. Complex orchestrators ("Hubs") manage the macroscopic execution flow by aggregating numerous dependencies, while at the bottom, "Leaf" utilities provide zero-dependency, hyper-stable support functions. The discovery of specific circular dependencies in the core highlights the recursive nature of formatting algorithms rather than poor design. The **Knowledge Dependencies** via co-change analysis provided vital insight: physical code coupling is only half the story. The plugin-based architecture forces developers to synchronize updates across statically independent files (such as multiple parallel parsers or cross-language plugin APIs), proving that architectural interfaces often dictate development workflows stronger than explicit imports.
+From the **Dependency Analysis**, the repository exhibits a healthy, pyramid-like structure. Complex orchestrators ("Hubs") manage the macroscopic execution flow by aggregating numerous dependencies, while at the bottom, "Leaf" utilities provide zero-dependency, hyper-stable support functions. The **Knowledge Dependencies** via co-change analysis provided vital insight: physical code coupling is only half the story. The plugin-based architecture forces developers to synchronize updates across statically independent files (such as multiple parallel parsers or cross-language plugin APIs), proving that architectural interfaces often dictate development workflows stronger than explicit imports.
 
 From the **Pattern Analysis**, Prettier's structural and behavioral decisions perfectly align with its core mission. By utilizing the **Facade** pattern, it hides a massive ecosystem behind a trivial API. The **Strategy** pattern guarantees absolute extensibility, allowing community plugins to seamlessly integrate. The **Visitor** pattern ensures that the system's formatting logic remains untethered from external, third-party data structures (ASTs). Finally, the combination of **Composite** and **Builder** patterns orchestrates Prettier's true innovation: an Intermediate Representation (Doc) that mathematically guarantees optimal line wrapping and grouping by calculating spatial constraints before any text is actually rendered. Together, these design aspects ensure Prettier remains robust, testable, and infinitely scalable.
