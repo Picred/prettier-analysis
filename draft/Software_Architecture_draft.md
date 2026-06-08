@@ -60,7 +60,6 @@ The **CLI Layer** and **API Layer** act as Interface Adapters (or Delivery Mecha
 
 The Component diagram breaks down the **Processing Engine** container into its constituent functional parts, tracking the lifecycle of code formatting. We intentionally discard the internal components of the CLI, API, and Configuration containers from this level of analysis; as established by our Clean Architecture mapping, these containers act merely as interface adapters. Their internal complexities do not represent the core architectural behavior of the system, which is centralized entirely within the pure logic of the Processing Engine.
 
-*(Insert Component Diagram Here)*
 ![Component View Diagram](../media/Component_View.jpeg)
 > *Figure 3: Component View Diagram*
 
