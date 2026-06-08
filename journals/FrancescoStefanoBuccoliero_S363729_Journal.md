@@ -9,4 +9,6 @@
 |**Reporting**: Documentation synthesis and collaborative integration into the team's codebase.|`VSCode`, `git`|21/04/2026|1|
 |**Pattern Analysis**: Identified and analyzed main design patterns in Prettier and their roles in the architecture.|`VSCode`, `grep`, `ls`|28/04/2026|3.5|
 |**Analyze main architectural components**: Draw a first version of the C4 model |`plantUml`, `gemini`, |06/05/2026|3.5|
-|**Analyze point 3**: writes a first version of the reports after analysis| |13-14/05/2026|6|
+|**Analyze each point of archiyecture**: Creation Context, Container, and Component diagrams| |13-14/05/2026|6|
+|**Software Architecture Report Drafting**: Wrote a first version of the report| |16/05/2026|2|
+|**Reports fixes**: Fixes in diagram directory and reports| |includes individual activities and group activities on different dates|--|
