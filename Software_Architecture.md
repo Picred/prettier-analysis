@@ -16,7 +16,7 @@ Throughout the diagrams, different notations are used to indicate the type of re
 
 The System Context diagram illustrates Prettier's macroscopic integration into a developer's workflow, highlighting its boundaries and interactions with external environments.
 
-![Context View Diagram](./media/Component_View.png)
+![Context View Diagram](./media/Context_View.png)
 > *Figure 1: Context View Diagram*
 
 ### Entities and Explanations
