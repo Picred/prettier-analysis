@@ -68,7 +68,6 @@ Prettier manages the extreme complexity of multi-language AST formatting through
 
 ```bash
 ├── media/                   # C4 Diagrams & Pattern Visualizations
-├── src/                     # Prettier Core Source Code (Analyzed)
 ├── Software_Architecture.md # Detailed Software Architecture Report (C4, SOLID)
 ├── Software_Design.md       # Detailed Software Design Report (Metrics, Co-changes, Patterns)
 └── README.md                # Project Entry Point (This file)
